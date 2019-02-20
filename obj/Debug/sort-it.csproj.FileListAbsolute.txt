@@ -1,7 +1,7 @@
 C:\Users\pokem\Documents\Visual Studio 2017\Projects\sort-it\sort-it\bin\Debug\sort-it.exe.config
 C:\Users\pokem\Documents\Visual Studio 2017\Projects\sort-it\sort-it\bin\Debug\sort-it.exe
 C:\Users\pokem\Documents\Visual Studio 2017\Projects\sort-it\sort-it\bin\Debug\sort-it.pdb
-C:\Users\pokem\Documents\Visual Studio 2017\Projects\sort-it\sort-it\obj\Debug\sort-it.csprojAssemblyReference.cache
 C:\Users\pokem\Documents\Visual Studio 2017\Projects\sort-it\sort-it\obj\Debug\sort-it.csproj.CoreCompileInputs.cache
 C:\Users\pokem\Documents\Visual Studio 2017\Projects\sort-it\sort-it\obj\Debug\sort-it.exe
 C:\Users\pokem\Documents\Visual Studio 2017\Projects\sort-it\sort-it\obj\Debug\sort-it.pdb
+C:\Users\pokem\Documents\Visual Studio 2017\Projects\sort-it\sort-it\obj\Debug\sort-it.csprojAssemblyReference.cache
