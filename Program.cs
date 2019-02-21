@@ -53,37 +53,40 @@ namespace sort_it
             return merged;
         }
 
+        static void SortFile(string pathFile, string sortType)
+        {
+            List<int> intList = new List<int>();
+            int intValue = 0;
+            for (int q = 0; q < File.ReadAllLines(pathFile, Encoding.Default).ToList().Count; q++)
+            {
+                if (int.TryParse((File.ReadAllLines(pathFile, Encoding.Default).ToList()[q]), out intValue))
+                    intList.Add(intValue);
+            }
+            if (sortType == "-a")
+            {
+                if (intList.Count == File.ReadAllLines(pathFile, Encoding.Default).ToList().Count)
+                    File.WriteAllLines(pathFile, MergeSort(intList.Select(x => int.Parse(x.ToString())).ToArray(), "-a").Select(x => x.ToString()).ToArray());
+                else
+                    File.WriteAllLines(pathFile, MergeSort(File.ReadAllLines(pathFile, Encoding.UTF8).ToArray(), "-a"));
+            }
+            else if (sortType == "-d")
+            {
+                if (intList.Count == File.ReadAllLines(pathFile, Encoding.Default).ToList().Count)
+                    File.WriteAllLines(pathFile, MergeSort(intList.Select(x => int.Parse(x.ToString())).ToArray(), "-d").Select(x => x.ToString()).ToArray());
+                else
+                    File.WriteAllLines(pathFile, MergeSort(File.ReadAllLines(pathFile, Encoding.UTF8).ToArray(), "-d"));
+            }
+        }
+
         static void Main(string[] args)
         {
-            //string[] arr = new string[10];
-            //Random rd = new Random();
-
-            //arr[0] = "варпапр";
-            //arr[1] = "гшд";
-            //arr[2] = "тьбюьб";
-            //arr[3] = "цук";
-            //arr[4] = "япроп";
-            //arr[5] = "фывф";
-            //arr[6] = "ываы";
-            //arr[7] = "авыаы";
-            //arr[8] = "гншл";
-            //arr[9] = "паноенг";
-            //Console.WriteLine("Массив перед сортировкой:");
-            //foreach (string x in arr)
-            //    System.Console.Write(x + " ");
-            //arr = MergeSort(arr, "-a");
-            //Console.WriteLine("\n\nМассив после сортировки:");
-            //foreach (string x in arr)
-            //    System.Console.Write(x + " ");
-            //Console.ReadKey();
-
-            foreach (string el in args)
-                Console.Write(el.ToString() + " ");
-
             bool isTyped = false;
             bool isSortTyped = false;
             bool isOut = false;
             bool isIn = false;
+
+            string sortType = "-a";
+            string outFile = null;
 
             FileStream fsOut = null;
             StreamWriter swOut = null;
@@ -120,7 +123,10 @@ namespace sort_it
                                 if (args[i] == "-a")
                                     Console.WriteLine("TYPEOFSORT: По возрастанию");
                                 else
+                                {
                                     Console.WriteLine("TYPEOFSORT: По убыванию");
+                                    sortType = "-d";
+                                }
                                 //Метод для определения типа сортировка
                             }
                             else
@@ -131,7 +137,7 @@ namespace sort_it
                             if (isOut == false)
                             {
                                 string[] argWords = args[i].Split('.');
-                                string outFile = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName + "/" + args[i].ToString();
+                                outFile = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName + "/" + args[i].ToString();
                                 fsOut = new FileStream(outFile, FileMode.Append);
                                 swOut = new StreamWriter(fsOut);
                                 isOut = true;
@@ -143,17 +149,7 @@ namespace sort_it
                                 string inFile = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName + "/" + args[i].ToString();
                                 if (File.Exists(inFile))
                                 {
-                                    List<int> intList = new List<int>();
-                                    int intValue = 0;
-                                    for (int q = 0; q < File.ReadAllLines(inFile, Encoding.Default).ToList().Count; q++)
-                                    {
-                                        if (int.TryParse((File.ReadAllLines(inFile, Encoding.Default).ToList()[q]), out intValue))
-                                            intList.Add(intValue);
-                                    }
-                                    if (intList.Count == File.ReadAllLines(inFile, Encoding.Default).ToList().Count)
-                                        File.WriteAllLines(inFile, MergeSort(intList.Select(x => int.Parse(x.ToString())).ToArray(), "-a").Select(x => x.ToString()).ToArray());
-                                    else
-                                        File.WriteAllLines(inFile, MergeSort(File.ReadAllLines(inFile, Encoding.UTF8).ToArray(), "-a"));
+                                    SortFile(inFile, sortType);
                                     StreamReader srIn = new StreamReader(inFile);
                                     isIn = true;
                                     Console.WriteLine("INFILE: " + args[i]);
@@ -188,6 +184,7 @@ namespace sort_it
             {
                 swOut.Close();
                 fsOut.Close();
+                SortFile(outFile,sortType);
             }
 
         }
