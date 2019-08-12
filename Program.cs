@@ -15,14 +15,16 @@ namespace sort_it
             if (massive.Length == 1)
                 return massive;
             int midPoint = massive.Length / 2;
-            return Merge(MergeSort(massive.Take(midPoint).ToArray(), sortType), MergeSort(massive.Skip(midPoint).ToArray(), sortType), sortType);
+            var leftHalf = massive.Take(midPoint).ToArray();
+            var rightHalf = massive.Skip(midPoint).ToArray();
+            return Merge(MergeSort(leftHalf, sortType), MergeSort(rightHalf, sortType), sortType);
         }
 
         static T[] Merge<T>(T[] mass1, T[] mass2, string sortType) where T : IComparable<T>
         {
             int a = 0, b = 0;
             
-            T[] merged = new T[mass1.Length + mass2.Length];
+            T[] mergedMass = new T[mass1.Length + mass2.Length];
             for (int i = 0; i < mass1.Length + mass2.Length; i++)
             {
                 try
@@ -30,23 +32,23 @@ namespace sort_it
                     if (b.CompareTo(mass2.Length) < 0 && a.CompareTo(mass1.Length) < 0)
                         if ((int.Parse(mass1[a].ToString()) < int.Parse(mass2[b].ToString()) && (sortType == "-d")) || (!(int.Parse(mass1[a].ToString()) < int.Parse(mass2[b].ToString())) && !(sortType == "-d")))
                         {
-                            merged[i] = mass2[b++];
+                            mergedMass[i] = mass2[b++];
                             Console.WriteLine("changed from b massiv, line {0}",i);
                         }
                         else
                         {
-                            merged[i] = mass1[a++];
+                            mergedMass[i] = mass1[a++];
                             Console.WriteLine("changed from a massiv, line {0}", i);
                         }
                     else
                         if (b < mass2.Length)
                         {
-                            merged[i] = mass2[b++];
+                            mergedMass[i] = mass2[b++];
                             Console.WriteLine("changed from b massiv, line {0}", i);
                         }
                         else
                         {
-                            merged[i] = mass1[a++];
+                            mergedMass[i] = mass1[a++];
                             Console.WriteLine("changed from a massiv, line {0}", i);
                         }
                 }
@@ -55,30 +57,31 @@ namespace sort_it
                     if (b.CompareTo(mass2.Length) < 0 && a.CompareTo(mass1.Length) < 0) 
                         if (((mass1[a].CompareTo(mass2[b]) < 0) && (sortType == "-d")) || (!(mass1[a].CompareTo(mass2[b]) < 0) && !(sortType == "-d")))
                         {
-                            merged[i] = mass2[b++];
+                            mergedMass[i] = mass2[b++];
                             Console.WriteLine("changed from b massiv, line {0}", i);
                         }
                         else
                         {
-                            merged[i] = mass1[a++];
+                            mergedMass[i] = mass1[a++];
                             Console.WriteLine("changed from a massiv, line {0}", i);
                         }
                     else
                         if (b < mass2.Length)
                         {
-                            merged[i] = mass2[b++];
+                            mergedMass[i] = mass2[b++];
                             Console.WriteLine("changed from b massiv, line {0}", i);
                         }
                         else
                         {
-                            merged[i] = mass1[a++];
+                            mergedMass[i] = mass1[a++];
                             Console.WriteLine("changed from a massiv, line {0}", i);
                         }
                 }
             }
-            return merged;
+            return mergedMass;
         }
 
+        //Если файл слишком большой по размеру, то он разбивается на равные части, которые сортируются отдельно
         static void SplitFile(string pathFile, long fileLength, long partSize, string sortType)
         {
             var totalRead = 0;
@@ -92,10 +95,8 @@ namespace sort_it
                     using (var fsNew = new FileStream((Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName + "\\" + "temp.txt"), FileMode.Append))
                     {
                         fsNew.Write(part, 0, part.Length);
-                        
                     }
                     SortFile(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName + "\\" + "temp.txt", sortType);
-                    
                 }
                 using (var srIn = new StreamReader(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName + "\\" + "temp.txt"))
                 {
@@ -103,21 +104,47 @@ namespace sort_it
                     using (var swOut = new StreamWriter(fs))
                     {
                         while ((line = srIn.ReadLine()) != null)
-                        {
                             swOut.WriteLine(line);
-                        }
                     }
                 }
                 File.Delete(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName + "\\" + "temp.txt");
             }
         }
 
+        //Сортировка по возрастанию/убыванию
         static void SortFile(string pathFile, string sortType)
         {
             if (sortType == "-a")
                 File.WriteAllLines(pathFile, MergeSort(File.ReadAllLines(pathFile, Encoding.UTF8).ToArray(), "-a"));
             else if (sortType == "-d")
                 File.WriteAllLines(pathFile, MergeSort(File.ReadAllLines(pathFile, Encoding.UTF8).ToArray(), "-d"));
+        }
+
+        static void DefineTypeOfData(bool isTyped, string[] args, int iter)
+        {
+             if (isTyped)
+                 throw new Exception("You must specify only one parameter designating the data type.");
+             isTyped = true;
+             if (args[iter] == "-s")
+             {
+                 Console.WriteLine("TYPEOFDATA: string");
+             }
+             else
+                 Console.WriteLine("TYPEOFDATA: integer");
+        }
+
+        static void DefineTypeOfSort(bool isSortTyped, string sortType, string[] args, int iter)
+        {
+            if (isSortTyped)
+                throw new Exception("It is necessary to specify only one parameter with the designation of the sorting type or not to specify at all (by default, sorting is ascending)");
+
+            isSortTyped = true;
+            Console.WriteLine("TYPEOFSORT: Ascending");
+            if (args[iter] == "-d")
+            {
+                Console.WriteLine("TYPEOFSORT: Descending");
+                sortType = "-d";
+            }
         }
 
         static void Main(string[] args)
@@ -137,97 +164,68 @@ namespace sort_it
             {
                 if (args.Length < 3)
                     throw new Exception("Insufficient arguments (at least 3: data type, output file, input file)");
-                else
+                Console.WriteLine();
+
+                for (int i = 0; i < args.Length; i++)
                 {
-                    Console.WriteLine();
-                    for (int i = 0; i < args.Length; i++)
+                    if (args[i] == "-s" || args[i] == "-i")
                     {
-                        if (args[i] == "-s" || args[i] == "-i")
-                        {
-                            if (isTyped == false)
-                            {
-                                isTyped = true;
-                                if (args[i] == "-s")
-                                {
-                                    Console.WriteLine("TYPEOFDATA: string");
-                                }
-                                else
-                                    Console.WriteLine("TYPEOFDATA: integer");
-                            }
-                            else
-                                throw new Exception("You must specify only one parameter designating the data type.");
-                        }
-                        else if (args[i] == "-a" || args[i] == "-d")
-                        {
-                            if (isSortTyped == false)
-                            {
-                                isSortTyped = true;
-
-                                if (args[i] == "-a")
-                                    Console.WriteLine("TYPEOFSORT: Ascending");
-                                else
-                                {
-                                    Console.WriteLine("TYPEOFSORT: Descending");
-                                    sortType = "-d";
-                                }
-                            }
-                            else
-                                throw new Exception("It is necessary to specify only one parameter with the designation of the sorting type or not to specify at all (by default, sorting is ascending)");
-                        }
-                        else if (args[i].Length > 2)
-                        {
-                            if (isOut == false)
-                            {
-                                string[] argWords = args[i].Split('.');
-                                outFile = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName + "\\" + args[i].ToString();
-                                fsOut = new FileStream(outFile, FileMode.Append);
-                                swOut = new StreamWriter(fsOut);
-                                isOut = true;
-                                Console.WriteLine("OUTFILE: " + args[i]);
-                                Console.WriteLine("OUTFILE PATH: " + outFile);
-                            }
-                            else
-                            {
-                                string inFile = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName + "\\" + args[i].ToString();
-                                if (File.Exists(inFile))
-                                {
-                                    long fileLength = new FileInfo(inFile).Length / 1024 /1024;
-                                    
-                                    PerformanceCounter ramCounter = new PerformanceCounter("Memory", "Available MBytes");
-                                    float available = ramCounter.NextValue();
-                                    ramCounter.Dispose();
-
-                                    Console.WriteLine("FILE_LENGTH: " + fileLength);
-                                    Console.WriteLine("AVAILABLE_RAM: " + available);
-                                    if (fileLength > available)
-                                        SplitFile(inFile, fileLength, (fileLength / (fileLength / (long)(available))), sortType);
-                                    else
-                                        SortFile(inFile, sortType);
-                                    StreamReader srIn = new StreamReader(inFile);
-                                    isIn = true;
-                                    Console.WriteLine("INFILE: " + args[i]);
-                                    Console.WriteLine("INFILE PATH: " + inFile);
-                                    string line;
-                                    while ((line = srIn.ReadLine()) != null)
-                                    {
-                                        swOut.WriteLine(line);
-                                    }
-                                    srIn.Close();
-                                }
-                                else
-                                    throw new Exception("Missing readable file(s) with given name(s)");
-                            }
-                        }
-                        else
-                        {
-                            throw new Exception("Invalid parameter(s)");
-                        }
+                        DefineTypeOfData(isTyped, args, i);
+                        continue;
                     }
-                    if (isIn == false)
-                        throw new Exception("Missing file(s) read");
-                    if (isSortTyped == false)
-                        Console.WriteLine("TYPEOFSORT: Descending");
+                    if (args[i] == "-a" || args[i] == "-d")
+                    {
+                        DefineTypeOfSort(isSortTyped, sortType, args, i);
+                        continue;
+                    }
+                    if (!isOut)
+                    {
+                        string[] argWords = args[i].Split('.');
+                        outFile = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName + "\\" + args[i].ToString();
+                        fsOut = new FileStream(outFile, FileMode.Append);
+                        swOut = new StreamWriter(fsOut);
+                        isOut = true;
+                        Console.WriteLine("OUTFILE: " + args[i]);
+                        Console.WriteLine("OUTFILE PATH: " + outFile);
+                        continue;
+                    }
+                    else
+                    {
+                        string inFile = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName + "\\" + args[i].ToString();
+                        if (!File.Exists(inFile))
+                            throw new Exception("Missing readable file(s) with given name(s)");
+                        
+                        long fileLength = new FileInfo(inFile).Length / 1024 /1024;
+                        
+                        PerformanceCounter ramCounter = new PerformanceCounter("Memory", "Available MBytes");
+                        float available = ramCounter.NextValue();
+                        ramCounter.Dispose();
+
+                        Console.WriteLine("FILE_LENGTH: " + fileLength);
+                        Console.WriteLine("AVAILABLE_RAM: " + available);
+                        if (fileLength > available)
+                            SplitFile(inFile, fileLength, (fileLength / (fileLength / (long)(available))), sortType);
+                        else
+                            SortFile(inFile, sortType);
+                        Console.WriteLine("INFILE: " + args[i]);
+                        Console.WriteLine("INFILE PATH: " + inFile);
+                        isIn = true;
+                        StreamReader srIn = new StreamReader(inFile);
+                        string line;
+                        while ((line = srIn.ReadLine()) != null)
+                        {
+                            swOut.WriteLine(line);
+                        }
+                        srIn.Close();
+                        continue;
+                    }
+                    throw new Exception("Invalid parameter(s)");
                 }
+                if (!isIn)
+                    throw new Exception("Missing file(s) read");
+                if (!isSortTyped)
+                    Console.WriteLine("TYPEOFSORT: Descending");
+                
             }
             catch (Exception e)
             {
